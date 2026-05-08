@@ -10,7 +10,6 @@ import {
   Moon,
   Menu,
   X,
-  Sparkles,
   ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -28,8 +27,8 @@ const navigation = [
     label: "Explore",
     children: [
       { label: "Ask a Question", href: "/questions", desc: "Search or ask Bible questions" },
-      { label: "AI Truth Guide", href: "/ai-guide", desc: "AI-powered scripture discovery" },
       { label: "Scripture Search", href: "/search", desc: "Full-text Bible search" },
+      { label: "Newsletter", href: "/newsletter", desc: "Daily devotion in your inbox" },
     ],
   },
   { label: "About", href: "/about" },
@@ -135,11 +134,11 @@ export function SiteHeader() {
           )}
 
           <Link
-            href="/ai-guide"
+            href="/daily-verse"
             className="hidden sm:flex btn-primary !px-4 !py-2 text-sm gap-1.5"
           >
-            <Sparkles className="w-3.5 h-3.5" />
-            AI Guide
+            <BookOpen className="w-3.5 h-3.5" />
+            Daily Verse
           </Link>
 
           <button
@@ -186,12 +185,12 @@ export function SiteHeader() {
             )}
             <div className="pt-2">
               <Link
-                href="/ai-guide"
+                href="/daily-verse"
                 className="btn-primary w-full justify-center text-sm"
                 onClick={() => setMobileOpen(false)}
               >
-                <Sparkles className="w-3.5 h-3.5" />
-                Try AI Truth Guide
+                <BookOpen className="w-3.5 h-3.5" />
+                Today's Verse
               </Link>
             </div>
           </div>

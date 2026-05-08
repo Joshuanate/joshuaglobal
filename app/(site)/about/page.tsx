@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BookOpen, Heart, Users, Sparkles, Globe } from "lucide-react";
+import { BookOpen, Heart, Users, Globe, Search } from "lucide-react";
 import { generateSEO } from "@/lib/seo";
 
 export const metadata: Metadata = generateSEO({
   title: "About Joshua Global — Our Mission & Vision",
   description:
-    "Joshua Global is a scripture-based platform helping people discover the original teachings of Jesus through truth-focused study, AI exploration, and community.",
+    "Joshua Global is a scripture-based platform helping people discover the original teachings of Jesus through truth-focused study, daily devotions, and community.",
   url: "/about",
 });
 
@@ -27,9 +27,9 @@ const values = [
     desc: "The Gospel is for all nations. Our platform is built to serve believers and seekers worldwide, in every context.",
   },
   {
-    icon: Sparkles,
-    title: "Modern Tools, Ancient Truths",
-    desc: "We use AI, modern UX, and digital tools to make ancient wisdom accessible without compromising its depth.",
+    icon: Search,
+    title: "Deep Search, Clear Truth",
+    desc: "Our Truth Dictionary, scripture search, and study tools make ancient wisdom accessible without compromising its depth.",
   },
 ];
 
@@ -60,8 +60,8 @@ export default function AboutPage() {
           is simple: dig back to the source.
         </p>
         <p className="text-muted-foreground leading-relaxed">
-          Through scripture-based study, original language insight, AI-assisted exploration, and
-          honest community dialogue, we help people encounter the living Word in its authentic form
+          Through scripture-based study, original language insight, honest community dialogue, and
+          daily devotion, we help people encounter the living Word in its authentic form
           — and live differently because of it.
         </p>
       </section>
@@ -103,9 +103,9 @@ export default function AboutPage() {
             <BookOpen className="w-4 h-4" />
             Start Daily Study
           </Link>
-          <Link href="/ai-guide" className="btn-secondary">
-            <Sparkles className="w-4 h-4" />
-            Try AI Guide
+          <Link href="/questions" className="btn-secondary">
+            <Users className="w-4 h-4" />
+            Ask a Question
           </Link>
         </div>
       </section>

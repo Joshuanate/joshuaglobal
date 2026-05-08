@@ -10,7 +10,7 @@ const footerLinks = {
   ],
   Explore: [
     { label: "Ask a Question", href: "/questions" },
-    { label: "AI Truth Guide", href: "/ai-guide" },
+    { label: "Scripture Search", href: "/search" },
     { label: "Categories", href: "/categories" },
     { label: "Community", href: "/community" },
   ],

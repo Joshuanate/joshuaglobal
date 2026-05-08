@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ChevronRight, ChevronUp, BookOpen, Sparkles, MessageCircle } from "lucide-react";
+import { ChevronRight, ChevronUp, BookOpen, MessageCircle } from "lucide-react";
 import { generateSEO, generateFAQSchema, generateBreadcrumbSchema } from "@/lib/seo";
 
 const getQuestion = (slug: string) => ({
@@ -23,10 +23,10 @@ const getQuestion = (slug: string) => ({
     {
       id: "a2",
       isAccepted: false,
-      isAI: true,
+      isAI: false,
       voteScore: 45,
-      body: `The AI Truth Guide adds context from Paul's writings:\n\nRomans 12:2 says **"be transformed by the renewing of your mind"** — which uses the word ἀνακαινόω (anakainoō), related to metanoia. This confirms that biblical repentance is fundamentally cognitive and ongoing.\n\nAlso notable: Romans 2:4 says God's **kindness** leads to repentance — not fear, guilt, or punishment. True metanoia is drawn by love, not compelled by shame. This completely reframes how most people understand the call to repentance.\n\n**Related teachings:** [What is the Kingdom of God?](/questions/what-is-the-kingdom-of-god) | [Grace in the original Greek](/truth/grace)`,
-      author: "AI Truth Guide",
+      body: `Adding context from Paul's writings:\n\nRomans 12:2 says **"be transformed by the renewing of your mind"** — which uses the word ἀνακαινόω (anakainoō), related to metanoia. This confirms that biblical repentance is fundamentally cognitive and ongoing.\n\nAlso notable: Romans 2:4 says God's **kindness** leads to repentance — not fear, guilt, or punishment. True metanoia is drawn by love, not compelled by shame. This completely reframes how most people understand the call to repentance.\n\n**Related teachings:** [What is the Kingdom of God?](/questions/what-is-the-kingdom-of-god) | [Grace in the original Greek](/truth/grace)`,
+      author: "Community",
       date: "May 2, 2026",
     },
   ],
@@ -121,13 +121,7 @@ export default async function QuestionPage({ params }: Props) {
                           ✓ Accepted Answer
                         </span>
                       )}
-                      {answer.isAI && (
-                        <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gold-100 dark:bg-gold-900/50 text-gold-700 dark:text-gold-400 text-xs font-semibold">
-                          <Sparkles className="w-3 h-3" />
-                          AI Guide
-                        </span>
-                      )}
-                    </div>
+                      </div>
                     <div className="prose prose-sm max-w-none text-muted-foreground mb-4 whitespace-pre-line">
                       {answer.body}
                     </div>
@@ -156,10 +150,6 @@ export default async function QuestionPage({ params }: Props) {
               />
               <div className="flex gap-3">
                 <button className="btn-primary text-sm">Post Answer</button>
-                <button className="btn-secondary text-sm flex items-center gap-2">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  Ask AI Guide
-                </button>
               </div>
             </section>
           </div>
@@ -195,11 +185,11 @@ export default async function QuestionPage({ params }: Props) {
               </div>
             </div>
 
-            <Link href="/ai-guide" className="block p-6 rounded-2xl border border-gold-200 dark:border-gold-800/50 bg-gradient-to-br from-gold-50 to-parchment-50 dark:from-gold-950/20 dark:to-background">
-              <Sparkles className="w-5 h-5 text-gold-500 mb-2" />
-              <h3 className="font-serif font-bold mb-1">AI Truth Guide</h3>
+            <Link href="/newsletter" className="block p-6 rounded-2xl border border-gold-200 dark:border-gold-800/50 bg-gradient-to-br from-gold-50 to-parchment-50 dark:from-gold-950/20 dark:to-background">
+              <BookOpen className="w-5 h-5 text-gold-500 mb-2" />
+              <h3 className="font-serif font-bold mb-1">Daily Devotion</h3>
               <p className="text-xs text-muted-foreground">
-                Get instant scripture-referenced answers to any question.
+                Get scripture, context, and prayer in your inbox every morning.
               </p>
             </Link>
           </aside>
