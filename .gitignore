@@ -55,3 +55,6 @@ next-env.d.ts
 
 # ── Local Claude config ───────────────────────────────────────
 .claude/
+
+# ── Local dev KV store ────────────────────────────────────────
+.dev-kv.json

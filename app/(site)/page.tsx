@@ -11,10 +11,13 @@ import {
   BookMarked,
   Lightbulb,
   Users,
-  Volume2,
   Heart,
 } from "lucide-react";
 import { generateSEO, generateOrganizationSchema } from "@/lib/seo";
+import { kvGet } from "@/lib/kv";
+import { type SiteContent, DEFAULT_CONTENT } from "@/lib/content";
+
+export const revalidate = 0; // Always fetch fresh content
 
 export const metadata: Metadata = generateSEO({
   title: "Discover the Original Teachings of Jesus",
@@ -23,12 +26,6 @@ export const metadata: Metadata = generateSEO({
   url: "/",
 });
 
-const featuredVerse = {
-  text: "The truth will set you free.",
-  reference: "John 8:32",
-  context:
-    "Jesus spoke these words to those who believed in him, promising that true discipleship leads to liberating knowledge.",
-};
 
 const categories = [
   { name: "Faith & Belief", icon: "✦", count: 142, href: "/teachings?cat=faith" },
@@ -109,8 +106,9 @@ const stats = [
   { value: "365", label: "Daily devotions/year" },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
   const orgSchema = generateOrganizationSchema();
+  const siteContent: SiteContent = (await kvGet<SiteContent>("site:content")) ?? DEFAULT_CONTENT;
 
   return (
     <>
@@ -118,6 +116,13 @@ export default function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }}
       />
+
+      {/* ── Announcement Banner ───────────────────────────────── */}
+      {siteContent.announcementActive && siteContent.announcement && (
+        <div className="bg-gold-500 text-black text-sm font-semibold text-center py-2.5 px-4">
+          {siteContent.announcement}
+        </div>
+      )}
 
       {/* ── Hero ─────────────────────────────────────────────── */}
       <section className="relative min-h-[90vh] flex items-center overflow-hidden">
@@ -146,14 +151,19 @@ export default function HomePage() {
 
             {/* Heading */}
             <h1 className="hero-text mb-6 animate-fade-up">
-              Discover the{" "}
-              <span className="gold-gradient">Original Teachings</span>
-              <br />of Jesus
+              {siteContent.heroHeadline.includes("Original Teachings") ? (
+                <>
+                  Discover the{" "}
+                  <span className="gold-gradient">Original Teachings</span>
+                  <br />of Jesus
+                </>
+              ) : (
+                <span className="gold-gradient">{siteContent.heroHeadline}</span>
+              )}
             </h1>
 
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed animate-fade-up">
-              Scripture-based studies, truth-focused teachings, daily Bible verses, and
-              AI-powered exploration — all in one spiritually deep, modern platform.
+              {siteContent.heroSubheading}
             </p>
 
             {/* CTAs */}
@@ -194,13 +204,13 @@ export default function HomePage() {
               Today&apos;s Verse — May 6, 2026
             </div>
             <blockquote className="font-serif text-2xl md:text-3xl font-medium italic text-foreground mb-4 leading-relaxed">
-              &ldquo;{featuredVerse.text}&rdquo;
+              &ldquo;{siteContent.featuredVerseText}&rdquo;
             </blockquote>
             <cite className="text-gold-600 dark:text-gold-400 font-semibold not-italic">
-              — {featuredVerse.reference}
+              — {siteContent.featuredVerseRef}
             </cite>
             <p className="text-muted-foreground mt-4 text-sm leading-relaxed max-w-xl mx-auto">
-              {featuredVerse.context}
+              {siteContent.featuredVerseContext}
             </p>
             <Link
               href="/daily-verse/john-8-32-truth-sets-you-free"
