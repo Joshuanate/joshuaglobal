@@ -1,0 +1,184 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 45 33% 98%;
+    --foreground: 20 10% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 20 10% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 10% 10%;
+    --primary: 43 75% 49%;
+    --primary-foreground: 20 10% 5%;
+    --secondary: 40 20% 93%;
+    --secondary-foreground: 20 10% 20%;
+    --muted: 40 15% 93%;
+    --muted-foreground: 20 8% 46%;
+    --accent: 43 75% 49%;
+    --accent-foreground: 20 10% 5%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 40 20% 88%;
+    --input: 40 20% 88%;
+    --ring: 43 75% 49%;
+    --radius: 0.625rem;
+  }
+
+  .dark {
+    --background: 20 10% 6%;
+    --foreground: 45 20% 94%;
+    --card: 20 10% 9%;
+    --card-foreground: 45 20% 94%;
+    --popover: 20 10% 9%;
+    --popover-foreground: 45 20% 94%;
+    --primary: 43 75% 55%;
+    --primary-foreground: 20 10% 5%;
+    --secondary: 20 8% 14%;
+    --secondary-foreground: 45 20% 84%;
+    --muted: 20 8% 14%;
+    --muted-foreground: 45 10% 55%;
+    --accent: 43 75% 55%;
+    --accent-foreground: 20 10% 5%;
+    --destructive: 0 62% 54%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 20 8% 18%;
+    --input: 20 8% 18%;
+    --ring: 43 75% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  ::selection {
+    @apply bg-gold-200 text-gold-900;
+  }
+}
+
+@layer components {
+  .scripture-quote {
+    @apply relative pl-6 py-2 italic text-muted-foreground border-l-2 border-gold-500 font-serif;
+  }
+
+  .gold-gradient {
+    @apply bg-gradient-to-r from-gold-400 via-gold-500 to-gold-600 bg-clip-text text-transparent;
+  }
+
+  .glow-gold {
+    @apply shadow-[0_0_30px_rgba(201,162,39,0.3)];
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/5;
+  }
+
+  .hero-text {
+    @apply font-serif text-5xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tight;
+  }
+
+  .section-heading {
+    @apply font-serif text-3xl md:text-4xl font-bold tracking-tight;
+  }
+
+  .container-editorial {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .badge-gold {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gold-100 text-gold-800 dark:bg-gold-950 dark:text-gold-200;
+  }
+
+  .nav-link {
+    @apply text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gold-500 hover:bg-gold-600 text-white font-semibold transition-all duration-200 shadow-lg shadow-gold-500/25 hover:shadow-gold-500/40 hover:-translate-y-0.5;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-border bg-card hover:bg-secondary text-foreground font-semibold transition-all duration-200;
+  }
+
+  .reading-progress {
+    @apply fixed top-0 left-0 h-0.5 bg-gradient-to-r from-gold-400 to-gold-600 z-50 transition-all;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mask-fade-bottom {
+    -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gold-300 dark:bg-gold-700 rounded-full;
+}
+
+/* Prose overrides */
+.prose {
+  @apply max-w-none;
+}
+
+.prose h2,
+.prose h3,
+.prose h4 {
+  @apply font-serif;
+}
+
+.prose blockquote {
+  @apply scripture-quote not-italic;
+}
+
+/* Loading skeleton */
+@keyframes skeleton-loading {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 25%,
+    hsl(var(--secondary)) 50%,
+    hsl(var(--muted)) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+}

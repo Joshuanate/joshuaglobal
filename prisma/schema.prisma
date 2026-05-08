@@ -1,0 +1,408 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Auth ────────────────────────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  role          UserRole  @default(USER)
+  bio           String?
+  accounts      Account[]
+  sessions      Session[]
+
+  questions      Question[]
+  answers        Answer[]
+  comments       Comment[]
+  votes          Vote[]
+  bookmarks      Bookmark[]
+  subscriptions  NewsletterSubscriber[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+enum UserRole {
+  USER
+  AUTHOR
+  ADMIN
+  SUPER_ADMIN
+}
+
+// ─── Daily Verses ─────────────────────────────────────────────────────────────
+
+model DailyVerse {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  verse       String
+  reference   String
+  book        String
+  chapter     Int
+  verseNumber String
+  translation String   @default("KJV")
+
+  context       String  @db.Text
+  originalMeaning String @db.Text
+  inspiration   String  @db.Text
+  prayer        String  @db.Text
+  application   String  @db.Text
+
+  relatedVerses Json     @default("[]")
+  tags          String[]
+  audioUrl      String?
+  imageUrl      String?
+
+  metaTitle       String?
+  metaDescription String?
+
+  publishedAt DateTime?
+  scheduledFor DateTime?
+  isPublished  Boolean   @default(false)
+  isFeatured   Boolean   @default(false)
+  viewCount    Int       @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+  @@index([scheduledFor])
+  @@index([isPublished])
+}
+
+// ─── Truth Dictionary ─────────────────────────────────────────────────────────
+
+model TruthEntry {
+  id       String @id @default(cuid())
+  slug     String @unique
+  term     String @unique
+  category String
+
+  definition       String   @db.Text
+  hebrewGreek      String?  @db.Text
+  biblicalContext  String   @db.Text
+  misconceptions   String   @db.Text
+  application      String   @db.Text
+
+  scriptures       Json     @default("[]")
+  relatedTerms     String[]
+  faq              Json     @default("[]")
+  tags             String[]
+
+  metaTitle       String?
+  metaDescription String?
+  embedding       Float[]
+
+  isPublished Boolean @default(false)
+  isFeatured  Boolean @default(false)
+  viewCount   Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  relatedTeachings Teaching[] @relation("TruthTeachings")
+
+  @@index([slug])
+  @@index([term])
+  @@index([category])
+}
+
+// ─── Questions & Answers ──────────────────────────────────────────────────────
+
+model Question {
+  id      String @id @default(cuid())
+  slug    String @unique
+  title   String
+  body    String @db.Text
+  tags    String[]
+
+  authorId  String?
+  author    User?   @relation(fields: [authorId], references: [id])
+  isAnonymous Boolean @default(false)
+
+  status      QuestionStatus @default(PENDING)
+  viewCount   Int            @default(0)
+  voteScore   Int            @default(0)
+  answerCount Int            @default(0)
+  isAccepted  Boolean        @default(false)
+
+  answers   Answer[]
+  votes     Vote[]
+  bookmarks Bookmark[]
+  comments  Comment[]
+
+  metaTitle       String?
+  metaDescription String?
+  embedding       Float[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+  @@index([status])
+  @@index([voteScore])
+}
+
+model Answer {
+  id         String  @id @default(cuid())
+  body       String  @db.Text
+  isAccepted Boolean @default(false)
+  voteScore  Int     @default(0)
+  isAI       Boolean @default(false)
+
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  authorId String?
+  author   User?   @relation(fields: [authorId], references: [id])
+
+  votes    Vote[]
+  comments Comment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Vote {
+  id   String   @id @default(cuid())
+  type VoteType
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+
+  questionId String?
+  question   Question? @relation(fields: [questionId], references: [id])
+
+  answerId String?
+  answer   Answer? @relation(fields: [answerId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, questionId])
+  @@unique([userId, answerId])
+}
+
+enum VoteType {
+  UP
+  DOWN
+}
+
+enum QuestionStatus {
+  PENDING
+  APPROVED
+  ANSWERED
+  CLOSED
+}
+
+// ─── Blog / Teachings ─────────────────────────────────────────────────────────
+
+model Teaching {
+  id       String @id @default(cuid())
+  slug     String @unique
+  title    String
+  subtitle String?
+  body     String @db.Text
+  excerpt  String @db.Text
+
+  authorId String?
+  author   User?   @relation(fields: [authorId], references: [id]) @ignore
+
+  category    String
+  tags        String[]
+  imageUrl    String?
+  imageAlt    String?
+  audioUrl    String?
+  readingTime Int     @default(0)
+
+  isPublished Boolean   @default(false)
+  isFeatured  Boolean   @default(false)
+  publishedAt DateTime?
+  viewCount   Int       @default(0)
+
+  metaTitle       String?
+  metaDescription String?
+  canonicalUrl    String?
+  ogImage         String?
+  embedding       Float[]
+
+  scriptures   Json @default("[]")
+  relatedPosts String[]
+
+  comments  Comment[]
+  bookmarks Bookmark[]
+  truths    TruthEntry[] @relation("TruthTeachings")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+  @@index([isPublished])
+  @@index([category])
+  @@index([publishedAt])
+}
+
+// ─── Comments ─────────────────────────────────────────────────────────────────
+
+model Comment {
+  id      String  @id @default(cuid())
+  body    String  @db.Text
+  isApproved Boolean @default(false)
+
+  authorId String?
+  author   User?   @relation(fields: [authorId], references: [id])
+  guestName  String?
+  guestEmail String?
+
+  teachingId String?
+  teaching   Teaching? @relation(fields: [teachingId], references: [id])
+
+  questionId String?
+  question   Question? @relation(fields: [questionId], references: [id])
+
+  answerId String?
+  answer   Answer? @relation(fields: [answerId], references: [id])
+
+  parentId String?
+  parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies  Comment[] @relation("CommentReplies")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─── Bookmarks ────────────────────────────────────────────────────────────────
+
+model Bookmark {
+  id   String       @id @default(cuid())
+  type BookmarkType
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  teachingId String?
+  teaching   Teaching? @relation(fields: [teachingId], references: [id])
+
+  questionId String?
+  question   Question? @relation(fields: [questionId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, teachingId])
+  @@unique([userId, questionId])
+}
+
+enum BookmarkType {
+  TEACHING
+  QUESTION
+  VERSE
+}
+
+// ─── Newsletter ───────────────────────────────────────────────────────────────
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  isActive  Boolean  @default(true)
+  confirmed Boolean  @default(false)
+  token     String   @unique @default(cuid())
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@index([isActive])
+}
+
+// ─── AI Conversations ─────────────────────────────────────────────────────────
+
+model AIConversation {
+  id       String    @id @default(cuid())
+  messages Json      @default("[]")
+  userId   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─── Media ────────────────────────────────────────────────────────────────────
+
+model MediaAsset {
+  id       String @id @default(cuid())
+  filename String
+  url      String
+  mimeType String
+  size     Int
+  alt      String?
+  caption  String?
+
+  uploadedById String?
+
+  createdAt DateTime @default(now())
+}
+
+// ─── Analytics ────────────────────────────────────────────────────────────────
+
+model PageView {
+  id        String   @id @default(cuid())
+  path      String
+  referer   String?
+  userAgent String?
+  country   String?
+  createdAt DateTime @default(now())
+
+  @@index([path])
+  @@index([createdAt])
+}
