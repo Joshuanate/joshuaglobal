@@ -3,6 +3,20 @@ import OpenAI from "openai";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+// Simple in-process rate limiter: 20 requests per IP per minute
+const rateLimitMap = new Map<string, { count: number; reset: number }>();
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+  if (!entry || now > entry.reset) {
+    rateLimitMap.set(ip, { count: 1, reset: now + 60_000 });
+    return true;
+  }
+  if (entry.count >= 20) return false;
+  entry.count++;
+  return true;
+}
+
 const SYSTEM_PROMPT = `You are the Joshua Global AI Truth Guide — a scripture-based assistant that helps people understand the Bible, particularly the teachings of Jesus.
 
 Your responses must:
@@ -25,6 +39,11 @@ Format your responses with:
 You are not a replacement for community, pastoral care, or personal Bible study — encourage these.`;
 
 export async function POST(req: NextRequest) {
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  if (!checkRateLimit(ip)) {
+    return NextResponse.json({ error: "Too many requests. Please wait a minute." }, { status: 429 });
+  }
+
   try {
     const { message, history = [] } = await req.json();
 

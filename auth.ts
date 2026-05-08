@@ -9,8 +9,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       authorize(credentials) {
-        const adminEmail = process.env.ADMIN_EMAIL ?? "admin@joshuaglobal.live";
-        const adminPassword = process.env.ADMIN_PASSWORD ?? "Joshua2026!";
+        const adminEmail = process.env.ADMIN_EMAIL;
+        const adminPassword = process.env.ADMIN_PASSWORD;
+
+        if (!adminEmail || !adminPassword) return null;
 
         if (
           credentials?.email === adminEmail &&
