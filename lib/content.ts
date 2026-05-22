@@ -11,11 +11,11 @@ export interface SiteContent {
 export const DEFAULT_CONTENT: SiteContent = {
   announcement: "",
   announcementActive: false,
-  featuredVerseText: "The truth will set you free.",
-  featuredVerseRef: "John 8:32",
+  featuredVerseText: "But seek first his kingdom and his righteousness, and all these things will be given to you as well.",
+  featuredVerseRef: "Matthew 6:33",
   featuredVerseContext:
-    "Jesus spoke these words to those who believed in him, promising that true discipleship leads to liberating knowledge.",
-  heroHeadline: "Discover the Original Teachings of Jesus",
+    "Jesus did not say seek first the church, seek first religion, or seek first blessings. He said seek first the Kingdom. This was His priority — and it must be ours.",
+  heroHeadline: "The Kingdom of God Has Come",
   heroSubheading:
-    "Scripture-based studies, truth-focused teachings, daily Bible verses, and AI-powered exploration — all in one spiritually deep, modern platform.",
+    "Jesus preached the Kingdom of God over 100 times. It was His first message, His last message, and His only message. This platform exists to declare that truth — unfiltered, uncompromised, for every nation.",
 };

@@ -1,43 +1,44 @@
 import Link from "next/link";
-import { BookOpen, Twitter, Youtube, Instagram, Mail } from "lucide-react";
+import { BookOpen, Twitter, Youtube, Instagram, Globe, Crown, Flame } from "lucide-react";
 
 const footerLinks = {
+  Kingdom: [
+    { label: "Kingdom of God", href: "/kingdom" },
+    { label: "Kingdom Teachings", href: "/teachings?cat=kingdom" },
+    { label: "Apostle Paul", href: "/teachings?cat=paul" },
+    { label: "Exposing Deception", href: "/teachings?cat=deception" },
+  ],
   Study: [
     { label: "Daily Verse", href: "/daily-verse" },
-    { label: "Teachings", href: "/teachings" },
+    { label: "All Teachings", href: "/teachings" },
     { label: "Truth Dictionary", href: "/truth" },
     { label: "Scripture Search", href: "/search" },
   ],
-  Explore: [
+  Answers: [
     { label: "Ask a Question", href: "/questions" },
-    { label: "Scripture Search", href: "/search" },
-    { label: "Categories", href: "/categories" },
-    { label: "Community", href: "/community" },
+    { label: "The Lord's Prayer", href: "/lords-prayer" },
+    { label: "How to Pray", href: "/questions/how-to-pray" },
+    { label: "Newsletter", href: "/newsletter" },
   ],
   Platform: [
-    { label: "About Us", href: "/about" },
-    { label: "Newsletter", href: "/newsletter" },
-    { label: "Donate", href: "/donate" },
-    { label: "Courses", href: "/courses" },
-  ],
-  Legal: [
+    { label: "About Joshua Global", href: "/about" },
+    { label: "Give / Donate", href: "/give" },
     { label: "Privacy Policy", href: "/privacy" },
     { label: "Terms of Service", href: "/terms" },
-    { label: "Cookie Policy", href: "/cookies" },
-    { label: "Sitemap", href: "/sitemap.xml" },
   ],
 };
 
 const socials = [
-  { icon: Twitter, href: "https://twitter.com/joshuaglobal", label: "Twitter" },
   { icon: Youtube, href: "https://youtube.com/@joshuaglobal", label: "YouTube" },
   { icon: Instagram, href: "https://instagram.com/joshuaglobal", label: "Instagram" },
-  { icon: Mail, href: "mailto:hello@joshuaglobal.live", label: "Email" },
+  { icon: Flame, href: "https://tiktok.com/@joshuaglobal", label: "TikTok" },
+  { icon: Twitter, href: "https://twitter.com/joshuaglobal", label: "Twitter / X" },
+  { icon: Globe, href: "https://pinterest.com/joshuaglobal", label: "Pinterest" },
 ];
 
 const verse = {
-  text: "Your word is a lamp to my feet and a light to my path.",
-  ref: "Psalm 119:105",
+  text: "But seek first his kingdom and his righteousness.",
+  ref: "Matthew 6:33",
 };
 
 export function SiteFooter() {
@@ -48,9 +49,9 @@ export function SiteFooter() {
         <div className="container-editorial py-10">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
-              <h3 className="font-serif text-xl font-bold">Daily Devotion in Your Inbox</h3>
+              <h3 className="font-serif text-xl font-bold">Daily Kingdom Devotion in Your Inbox</h3>
               <p className="text-sm text-muted-foreground mt-1">
-                Receive scripture, study, and inspiration every morning.
+                Verse, meaning, prayer, and Kingdom truth delivered every morning. Free forever.
               </p>
             </div>
             <form className="flex gap-2 w-full md:w-auto" action="/api/newsletter" method="POST">
@@ -79,18 +80,21 @@ export function SiteFooter() {
           <div className="col-span-2">
             <Link href="/" className="flex items-center gap-2.5 mb-4 group">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gold-400 to-gold-600 flex items-center justify-center">
-                <BookOpen className="w-4 h-4 text-white" />
+                <Crown className="w-4 h-4 text-white" />
               </div>
               <span className="font-serif font-bold text-lg">
                 Joshua<span className="text-gold-500">Global</span>
               </span>
             </Link>
-            <p className="text-sm text-muted-foreground leading-relaxed mb-6 max-w-xs">
-              Helping people discover the original teachings of Jesus through scripture-based
-              truth, study, and modern tools.
+            <p className="text-sm text-muted-foreground leading-relaxed mb-4 max-w-xs">
+              Preaching the Kingdom of God to every nation. The original message of Jesus Christ —
+              unfiltered, uncompromised, for all people.
+            </p>
+            <p className="text-xs text-gold-600 dark:text-gold-400 font-semibold mb-5">
+              Mine is the Kingdom. Lord Jesus is my King.
             </p>
             <blockquote className="text-xs italic text-muted-foreground/70 border-l border-gold-400 pl-3">
-              "{verse.text}"
+              &ldquo;{verse.text}&rdquo;
               <cite className="block not-italic font-medium text-gold-600 dark:text-gold-400 mt-1">
                 — {verse.ref}
               </cite>
@@ -124,7 +128,7 @@ export function SiteFooter() {
       <div className="border-t border-border">
         <div className="container-editorial py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} Joshua Global. Built for the glory of God.
+            © {new Date().getFullYear()} Joshua Global. Preaching the Kingdom of God to the nations.
           </p>
           <div className="flex items-center gap-3">
             {socials.map((s) => (

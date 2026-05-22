@@ -11,26 +11,38 @@ import {
   Menu,
   X,
   ChevronDown,
+  Crown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navigation = [
   {
+    label: "Kingdom",
+    children: [
+      { label: "Kingdom of God", href: "/kingdom", desc: "Jesus' #1 message — explained in full" },
+      { label: "Kingdom Teachings", href: "/teachings?cat=kingdom", desc: "Deep studies on the Kingdom" },
+      { label: "Apostle Paul", href: "/teachings?cat=paul", desc: "Paul's Kingdom epistles & letters" },
+      { label: "Exposing Deception", href: "/teachings?cat=deception", desc: "Truth vs. the lies of this world" },
+    ],
+  },
+  {
     label: "Study",
     children: [
       { label: "Daily Verse", href: "/daily-verse", desc: "Today's scripture with deep context" },
-      { label: "Teachings", href: "/teachings", desc: "Long-form biblical studies" },
+      { label: "All Teachings", href: "/teachings", desc: "Long-form biblical studies" },
       { label: "Truth Dictionary", href: "/truth", desc: "Search biblical terms & concepts" },
     ],
   },
   {
-    label: "Explore",
+    label: "Answers",
     children: [
-      { label: "Ask a Question", href: "/questions", desc: "Search or ask Bible questions" },
+      { label: "Ask a Question", href: "/questions", desc: "Get answers about God, Jesus & the Bible" },
+      { label: "The Lord's Prayer", href: "/lords-prayer", desc: "Taught by Jesus — pray it with meaning" },
       { label: "Scripture Search", href: "/search", desc: "Full-text Bible search" },
-      { label: "Newsletter", href: "/newsletter", desc: "Daily devotion in your inbox" },
+      { label: "Newsletter", href: "/newsletter", desc: "Daily Kingdom devotion in your inbox" },
     ],
   },
+  { label: "Give", href: "/give" },
   { label: "About", href: "/about" },
 ];
 
@@ -134,11 +146,11 @@ export function SiteHeader() {
           )}
 
           <Link
-            href="/daily-verse"
+            href="/kingdom"
             className="hidden sm:flex btn-primary !px-4 !py-2 text-sm gap-1.5"
           >
-            <BookOpen className="w-3.5 h-3.5" />
-            Daily Verse
+            <Crown className="w-3.5 h-3.5" />
+            The Kingdom
           </Link>
 
           <button
