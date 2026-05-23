@@ -21,7 +21,7 @@ const navigation = [
     children: [
       { label: "Kingdom of God", href: "/kingdom", desc: "Jesus' #1 message — explained in full" },
       { label: "Kingdom Teachings", href: "/teachings?cat=kingdom", desc: "Deep studies on the Kingdom" },
-      { label: "Apostle Paul", href: "/teachings?cat=paul", desc: "Paul's Kingdom epistles & letters" },
+      { label: "Apostle Paul", href: "/apostle-paul", desc: "His story, his letters, his Kingdom message" },
       { label: "Exposing Deception", href: "/teachings?cat=deception", desc: "Truth vs. the lies of this world" },
     ],
   },

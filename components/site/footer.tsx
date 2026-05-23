@@ -5,7 +5,7 @@ const footerLinks = {
   Kingdom: [
     { label: "Kingdom of God", href: "/kingdom" },
     { label: "Kingdom Teachings", href: "/teachings?cat=kingdom" },
-    { label: "Apostle Paul", href: "/teachings?cat=paul" },
+    { label: "Apostle Paul", href: "/apostle-paul" },
     { label: "Exposing Deception", href: "/teachings?cat=deception" },
   ],
   Study: [
