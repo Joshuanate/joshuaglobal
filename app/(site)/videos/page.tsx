@@ -14,7 +14,6 @@ const featuredVideo = {
   description: "The most important message Jesus ever preached — explained from first principles. No religion, no tradition. Just the Word.",
   duration: "38 min",
   category: "Kingdom of God",
-  youtubeId: "dQw4w9WgXcQ", // placeholder
 };
 
 const videos = [
@@ -64,7 +63,7 @@ const videos = [
 
 export default function VideosPage() {
   return (
-    <main className="min-h-screen pt-[62px]">
+    <div className="min-h-screen">
       {/* Header */}
       <section className="py-20 border-b border-border/60 bg-secondary/20">
         <div className="container-editorial">
@@ -230,6 +229,6 @@ export default function VideosPage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

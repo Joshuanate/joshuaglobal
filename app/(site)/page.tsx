@@ -204,7 +204,7 @@ export default async function HomePage() {
       )}
 
       {/* ── HERO ──────────────────────────────────────────────────────── */}
-      <section className="relative min-h-screen flex items-center overflow-hidden bg-background pt-[62px]">
+      <section className="relative min-h-screen flex items-center overflow-hidden bg-background">
 
         {/* Background */}
         <div className="absolute inset-0 -z-10">

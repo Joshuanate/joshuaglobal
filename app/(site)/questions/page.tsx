@@ -52,50 +52,59 @@ export default function QuestionsPage() {
   const answered = questions.filter((q) => q.isAnswered).length;
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-12">
-      {/* Header */}
-      <header className="mb-10">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-gold-500/30 bg-gold-500/10 text-gold-500 text-xs font-semibold mb-4">
-          <MessageCircle className="w-3 h-3" /> Community Q&amp;A
-        </div>
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
-          <div>
-            <h1 className="font-serif text-4xl md:text-5xl font-bold mb-3">Bible Questions</h1>
-            <p className="text-muted-foreground text-lg max-w-2xl">
-              Ask anything about God, scripture, and the Kingdom. Get truth-based answers.
-            </p>
-            {!loading && (
-              <p className="text-sm text-muted-foreground mt-1">
-                {answered} answered · {questions.length} total questions
+    <div>
+      {/* ── Page Header ─────────────────────────────────────────── */}
+      <section className="py-20 border-b border-border/60 bg-secondary/20">
+        <div className="container-editorial">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+            <div className="max-w-xl">
+              <div className="flex items-center gap-2 mb-6">
+                <div className="w-1.5 h-1.5 rounded-full bg-gold-400" />
+                <span className="section-label text-gold-600 dark:text-gold-400">Community Q&amp;A</span>
+              </div>
+              <h1 className="section-heading mb-4">Questions &amp; Answers</h1>
+              <p className="text-muted-foreground text-lg leading-relaxed">
+                Ask anything about God, Scripture, and the Kingdom. Get truth-based answers — no religion, just the Word.
               </p>
-            )}
+              {!loading && (
+                <p className="text-sm text-muted-foreground mt-3">
+                  <span className="text-gold-500 font-semibold">{answered}</span> answered ·{" "}
+                  <span className="font-semibold">{questions.length}</span> total questions
+                </p>
+              )}
+            </div>
+            <Link href="/questions/ask" className="btn-primary whitespace-nowrap gap-2 self-start sm:self-auto">
+              <Plus className="w-4 h-4" /> Ask a Question
+            </Link>
           </div>
-          <Link href="/questions/ask" className="btn-primary whitespace-nowrap gap-2">
-            <Plus className="w-4 h-4" /> Ask a Question
-          </Link>
         </div>
-      </header>
+      </section>
 
+      {/* ── Search + List ────────────────────────────────────────── */}
+      <section className="py-16 pb-28">
+      <div className="container-editorial max-w-4xl">
       {/* Search */}
-      <div className="relative mb-6">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+      <div className="relative mb-5">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <input
           type="text"
           placeholder="Search questions — kingdom, prayer, grace, Jesus..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-12 pr-4 py-4 rounded-2xl border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
+          className="w-full pl-11 pr-4 py-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-gold-500/40 focus:border-gold-400/40 transition-all"
         />
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-2 mb-8 overflow-x-auto">
+      <div className="flex items-center gap-2 mb-8 overflow-x-auto scrollbar-hide pb-1">
         {(["Trending", "Newest", "Most Answered", "Unanswered"] as Filter[]).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
             className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${
-              filter === f ? "bg-gold-500 text-white" : "border border-border bg-card text-muted-foreground hover:text-foreground"
+              filter === f
+                ? "bg-gold-500 text-black font-semibold"
+                : "border border-border bg-card text-muted-foreground hover:text-foreground hover:border-gold-300/50 dark:hover:border-gold-700/40"
             }`}
           >
             {f}
@@ -182,6 +191,8 @@ export default function QuestionsPage() {
           })}
         </div>
       )}
+      </div>
+      </section>
     </div>
   );
 }

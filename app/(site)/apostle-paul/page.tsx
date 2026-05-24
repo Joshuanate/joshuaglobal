@@ -27,7 +27,7 @@ const epistles = [
 
 export default function ApostlePaulPage() {
   return (
-    <main className="min-h-screen">
+    <div className="min-h-screen">
 
       {/* ── HERO ────────────────────────────────────────────────── */}
       <section className="relative bg-zinc-950 overflow-hidden min-h-[85vh] flex items-center">
@@ -492,6 +492,6 @@ export default function ApostlePaulPage() {
         </div>
       </section>
 
-    </main>
+    </div>
   );
 }

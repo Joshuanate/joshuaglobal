@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowLeft, Save, Loader2, CheckCircle, AlertCircle,
   Eye, EyeOff, Star, Globe, ChevronDown, ChevronUp,
+  Bold, Italic, Heading2, Heading3, Quote, Minus, Link2, List,
 } from "lucide-react";
 import { BLOG_CATEGORIES } from "@/lib/blog-types";
 import type { BlogPost } from "@/lib/blog-types";
@@ -24,17 +25,24 @@ const EMPTY_FORM = {
   noIndex: false,
 };
 
+function countWords(text: string): number {
+  return text.trim() ? text.trim().split(/\s+/).length : 0;
+}
+
 export default function AdminBlogEditorPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get("edit");
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
 
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [autoSaved, setAutoSaved] = useState(false);
   const [error, setError] = useState("");
   const [seoOpen, setSeoOpen] = useState(false);
   const [loadingPost, setLoadingPost] = useState(!!editId);
+  const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!editId) return;
@@ -62,10 +70,52 @@ export default function AdminBlogEditorPage() {
       });
   }, [editId]);
 
-  function update(key: string, value: string | boolean) {
+  const update = useCallback((key: string, value: string | boolean) => {
     setForm((p) => ({ ...p, [key]: value }));
     setError("");
     setSaved(false);
+    // Auto-save indicator after 3s of inactivity on body/title/excerpt
+    if (["body", "title", "excerpt"].includes(key) && editId) {
+      if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+      setAutoSaved(false);
+      autoSaveTimer.current = setTimeout(() => {
+        setAutoSaved(true);
+        setTimeout(() => setAutoSaved(false), 3000);
+      }, 3000);
+    }
+  }, [editId]);
+
+  // Markdown toolbar insert helper
+  function insertMarkdown(prefix: string, suffix = "", placeholder = "text") {
+    const ta = bodyRef.current;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const selected = ta.value.slice(start, end) || placeholder;
+    const before = ta.value.slice(0, start);
+    const after = ta.value.slice(end);
+    const newVal = `${before}${prefix}${selected}${suffix}${after}`;
+    update("body", newVal);
+    // Re-focus and place cursor after insert
+    setTimeout(() => {
+      ta.focus();
+      const newPos = start + prefix.length + selected.length + suffix.length;
+      ta.setSelectionRange(newPos, newPos);
+    }, 0);
+  }
+
+  function insertLinePrefix(prefix: string) {
+    const ta = bodyRef.current;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const lineStart = ta.value.lastIndexOf("\n", start - 1) + 1;
+    const before = ta.value.slice(0, lineStart);
+    const after = ta.value.slice(lineStart);
+    update("body", `${before}${prefix}${after}`);
+    setTimeout(() => {
+      ta.focus();
+      ta.setSelectionRange(lineStart + prefix.length, lineStart + prefix.length);
+    }, 0);
   }
 
   async function handleSave() {
@@ -217,15 +267,60 @@ export default function AdminBlogEditorPage() {
 
         {/* Body */}
         <div>
-          <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 block">
-            Article Body * <span className="font-normal normal-case">(markdown: **bold**, *italic*, ## Heading, ---)</span>
-          </label>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Article Body *
+            </label>
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              {autoSaved && (
+                <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
+                  <CheckCircle className="w-3 h-3" /> Auto-saved
+                </span>
+              )}
+              <span>{countWords(form.body).toLocaleString()} words</span>
+              <span>{form.body.length.toLocaleString()} chars</span>
+            </div>
+          </div>
+          {/* Markdown toolbar */}
+          <div className="flex items-center gap-0.5 p-1.5 rounded-t-xl border border-border border-b-0 bg-secondary/50 flex-wrap">
+            {[
+              { icon: Bold, title: "Bold", action: () => insertMarkdown("**", "**", "bold text") },
+              { icon: Italic, title: "Italic", action: () => insertMarkdown("*", "*", "italic text") },
+              { icon: Heading2, title: "Heading 2", action: () => insertLinePrefix("## ") },
+              { icon: Heading3, title: "Heading 3", action: () => insertLinePrefix("### ") },
+              { icon: Quote, title: "Blockquote", action: () => insertLinePrefix("> ") },
+              { icon: List, title: "List item", action: () => insertLinePrefix("- ") },
+              { icon: Link2, title: "Link", action: () => insertMarkdown("[", "](https://)", "link text") },
+              { icon: Minus, title: "Divider", action: () => {
+                const ta = bodyRef.current;
+                if (!ta) return;
+                const start = ta.selectionStart;
+                const before = ta.value.slice(0, start);
+                const after = ta.value.slice(start);
+                update("body", `${before}\n\n---\n\n${after}`);
+              }},
+            ].map(({ icon: Icon, title, action }) => (
+              <button
+                key={title}
+                type="button"
+                title={title}
+                onClick={action}
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-background transition-colors"
+              >
+                <Icon className="w-3.5 h-3.5" />
+              </button>
+            ))}
+            <span className="ml-2 text-xs text-muted-foreground/60">
+              markdown: **bold**, *italic*, ## H2, ### H3
+            </span>
+          </div>
           <textarea
+            ref={bodyRef}
             rows={28}
             value={form.body}
             onChange={(e) => update("body", e.target.value)}
             placeholder={`Start writing here...\n\n## Section Heading\n\nYour content. Use **bold** for key phrases. Use *italics* for scripture quotes.\n\n---\n\nAnother section...`}
-            className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-gold-500 resize-y font-mono leading-relaxed"
+            className="w-full px-4 py-3 rounded-b-xl rounded-t-none border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-gold-500 resize-y font-mono leading-relaxed"
           />
         </div>
 
