@@ -28,6 +28,7 @@ const navigation = [
   {
     label: "Study",
     children: [
+      { label: "Blog & Articles", href: "/blog", desc: "Kingdom articles and deep studies" },
       { label: "Daily Verse", href: "/daily-verse", desc: "Today's scripture with deep context" },
       { label: "All Teachings", href: "/teachings", desc: "Long-form biblical studies" },
       { label: "Truth Dictionary", href: "/truth", desc: "Search biblical terms & concepts" },

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
+import { getGlobalSEO } from "@/lib/seo-settings";
 import "./globals.css";
 
 const inter = Inter({
@@ -18,72 +19,74 @@ const playfair = Playfair_Display({
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://joshuaglobal.live";
 
-export const metadata: Metadata = {
-  metadataBase: new URL(APP_URL),
-  title: {
-    default: "Joshua Global — Discover the Original Teachings of Jesus",
-    template: "%s | Joshua Global",
-  },
-  description:
-    "Explore scripture-based studies, biblical truth, daily verses, and AI-powered spiritual guidance. Discover what Jesus truly taught.",
-  keywords: [
-    "Bible study",
-    "Christian teachings",
-    "Jesus",
-    "scripture",
-    "biblical truth",
-    "daily verse",
-    "Christian platform",
-    "faith",
-    "gospel",
-    "biblical education",
-  ],
-  authors: [{ name: "Joshua Global", url: APP_URL }],
-  creator: "Joshua Global",
-  publisher: "Joshua Global",
-  openGraph: {
-    type: "website",
-    locale: "en_US",
-    url: APP_URL,
-    siteName: "Joshua Global",
-    title: "Joshua Global — Discover the Original Teachings of Jesus",
-    description:
-      "Explore scripture-based studies, biblical truth, and AI-powered spiritual guidance.",
-    images: [
-      {
-        url: `${APP_URL}/og-default.jpg`,
-        width: 1200,
-        height: 630,
-        alt: "Joshua Global",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Joshua Global — Discover the Original Teachings of Jesus",
-    description:
-      "Explore scripture-based studies, biblical truth, and AI-powered spiritual guidance.",
-    images: [`${APP_URL}/og-default.jpg`],
-    creator: "@joshuaglobal",
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getGlobalSEO();
+  return {
+    metadataBase: new URL(APP_URL),
+    title: {
+      default: seo.siteTitle,
+      template: seo.titleTemplate,
     },
-  },
-  verification: {
-    google: process.env.GOOGLE_SITE_VERIFICATION,
-  },
-  alternates: {
-    canonical: APP_URL,
-  },
-};
+    description: seo.defaultDescription,
+    keywords: [
+      "Kingdom of God",
+      "Bible study",
+      "Christian teachings",
+      "Jesus",
+      "scripture",
+      "biblical truth",
+      "daily verse",
+      "Apostle Paul",
+      "Myles Munroe",
+      "gospel",
+    ],
+    authors: [{ name: "Joshua Global", url: APP_URL }],
+    creator: "Joshua Global",
+    publisher: "Joshua Global",
+    openGraph: {
+      type: "website",
+      locale: "en_US",
+      url: APP_URL,
+      siteName: seo.siteTitle,
+      title: seo.siteTitle,
+      description: seo.defaultDescription,
+      images: [
+        {
+          url: seo.defaultOgImage,
+          width: 1200,
+          height: 630,
+          alt: seo.siteTitle,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: seo.siteTitle,
+      description: seo.defaultDescription,
+      images: [seo.defaultOgImage],
+      creator: seo.twitterHandle,
+    },
+    robots: seo.indexingEnabled
+      ? {
+          index: true,
+          follow: true,
+          googleBot: {
+            index: true,
+            follow: true,
+            "max-video-preview": -1,
+            "max-image-preview": "large",
+            "max-snippet": -1,
+          },
+        }
+      : { index: false, follow: false },
+    verification: {
+      google: seo.googleVerification || process.env.GOOGLE_SITE_VERIFICATION,
+    },
+    alternates: {
+      canonical: APP_URL,
+    },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: [

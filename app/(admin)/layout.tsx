@@ -9,22 +9,22 @@ import {
   Users,
   Settings,
   BarChart3,
-  Image,
-  ChevronRight,
   Edit3,
   LogOut,
   Globe,
+  FileText,
+  Search,
 } from "lucide-react";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/admin" },
   { icon: Edit3, label: "Live Content", href: "/admin/content", highlight: true },
+  { icon: FileText, label: "Blog", href: "/admin/blog" },
   { icon: BookOpen, label: "Teachings", href: "/admin/teachings" },
   { icon: BookMarked, label: "Daily Verses", href: "/admin/verses" },
-  { icon: BookMarked, label: "Truth Dictionary", href: "/admin/truth" },
   { icon: MessageCircle, label: "Questions", href: "/admin/questions" },
+  { icon: Search, label: "SEO", href: "/admin/seo" },
   { icon: Users, label: "Subscribers", href: "/admin/subscribers" },
-  { icon: Image, label: "Media", href: "/admin/media" },
   { icon: BarChart3, label: "Analytics", href: "/admin/analytics" },
   { icon: Settings, label: "Settings", href: "/admin/settings" },
 ];
