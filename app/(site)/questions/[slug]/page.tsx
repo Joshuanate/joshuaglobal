@@ -1,200 +1,235 @@
-import type { Metadata } from "next";
+"use client";
+
+import { useState, useEffect, use } from "react";
 import Link from "next/link";
-import { ChevronRight, ChevronUp, BookOpen, MessageCircle } from "lucide-react";
-import { generateSEO, generateFAQSchema, generateBreadcrumbSchema } from "@/lib/seo";
+import {
+  ChevronUp, ArrowLeft, Crown, CheckCircle, Send,
+  Loader2, AlertCircle, MessageCircle, User,
+} from "lucide-react";
+import type { Question } from "@/lib/question-types";
 
-const getQuestion = (slug: string) => ({
-  slug,
-  title: "What did Jesus mean by repentance?",
-  body: "I've always been taught that repentance means feeling really sorry for your sins and vowing not to do them again. But recently I heard that the Greek word has a different meaning. Can someone explain what Jesus actually meant when he said 'Repent, for the kingdom of heaven is at hand'?",
-  tags: ["repentance", "greek", "jesus", "kingdom"],
-  votes: 142,
-  date: "May 2, 2026",
-  answers: [
-    {
-      id: "a1",
-      isAccepted: true,
-      isAI: false,
-      voteScore: 89,
-      body: `Great question. The Greek word Jesus used is **μετάνοια (metanoia)** — not the remorse-focused word you might expect.\n\nMetanoia literally breaks down as:\n- **meta** = change, transformation\n- **nous** = mind, perception, understanding\n\nSo metanoia = **a change of mind** — specifically, a fundamental reorientation of how you perceive reality.\n\nJesus wasn't primarily calling for emotional guilt. He was calling for a complete paradigm shift — a new way of seeing God, yourself, your neighbor, and the world. This is why he immediately connects it to the Kingdom of God: "Repent, **for** the Kingdom of heaven is at hand." The kingdom is already breaking in — repentance is the cognitive realignment that allows you to perceive and participate in it.\n\nThe Hebrew equivalent שׁוּב (shuv) reinforces this — it means "to turn" or "to return," emphasizing relational movement back toward God.\n\nSo repentance = turning your mind toward God's reality and away from every false framework. It is an ongoing posture, not a one-time event.`,
-      author: "Joshua Global",
-      date: "May 2, 2026",
-    },
-    {
-      id: "a2",
-      isAccepted: false,
-      isAI: false,
-      voteScore: 45,
-      body: `Adding context from Paul's writings:\n\nRomans 12:2 says **"be transformed by the renewing of your mind"** — which uses the word ἀνακαινόω (anakainoō), related to metanoia. This confirms that biblical repentance is fundamentally cognitive and ongoing.\n\nAlso notable: Romans 2:4 says God's **kindness** leads to repentance — not fear, guilt, or punishment. True metanoia is drawn by love, not compelled by shame. This completely reframes how most people understand the call to repentance.\n\n**Related teachings:** [What is the Kingdom of God?](/questions/what-is-the-kingdom-of-god) | [Grace in the original Greek](/truth/grace)`,
-      author: "Community",
-      date: "May 2, 2026",
-    },
-  ],
-  relatedQuestions: [
-    { slug: "what-is-the-kingdom-of-god", title: "What is the Kingdom of God?" },
-    { slug: "what-is-grace", title: "What exactly is grace?" },
-    { slug: "how-should-christians-pray", title: "How should Christians pray?" },
-  ],
-});
-
-interface Props {
-  params: Promise<{ slug: string }>;
+function renderBody(text: string) {
+  const lines = text.split("\n");
+  let html = "";
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    if (line.startsWith("## ")) {
+      html += `<h2 class="font-serif text-xl font-bold mt-6 mb-3">${line.slice(3)}</h2>`;
+    } else if (line.startsWith("### ")) {
+      html += `<h3 class="font-serif text-lg font-bold mt-5 mb-2">${line.slice(4)}</h3>`;
+    } else if (line.trim() === "---") {
+      html += `<hr class="border-border my-5" />`;
+    } else if (line.trim() === "") {
+      html += `<br/>`;
+    } else {
+      const formatted = line
+        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+        .replace(/\*(.*?)\*/g, "<em>$1</em>")
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-gold-500 underline hover:text-gold-400">$1</a>');
+      html += `<p class="mb-3 leading-relaxed">${formatted}</p>`;
+    }
+    i++;
+  }
+  return html;
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
-  const q = getQuestion(slug);
-  return generateSEO({
-    title: q.title,
-    description: q.body.slice(0, 155) + "…",
-    url: `/questions/${slug}`,
-    type: "article",
-    tags: q.tags,
-  });
-}
+export default function QuestionPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = use(params);
+  const [question, setQuestion] = useState<Question | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+  const [voted, setVoted] = useState(false);
+  const [answerForm, setAnswerForm] = useState({ body: "", name: "" });
+  const [submitting, setSubmitting] = useState(false);
+  const [answerError, setAnswerError] = useState("");
+  const [answerDone, setAnswerDone] = useState(false);
 
-export default async function QuestionPage({ params }: Props) {
-  const { slug } = await params;
-  const q = getQuestion(slug);
+  useEffect(() => {
+    fetch(`/api/questions/${slug}`)
+      .then((r) => { if (!r.ok) { setNotFound(true); setLoading(false); return null; } return r.json(); })
+      .then((data) => { if (data) setQuestion(data); setLoading(false); });
+  }, [slug]);
 
-  const faqSchema = generateFAQSchema(
-    q.answers.map((a) => ({ question: q.title, answer: a.body.replace(/\*\*/g, "") }))
+  async function handleVote() {
+    if (!question || voted) return;
+    setVoted(true);
+    setQuestion((prev) => prev ? { ...prev, votes: prev.votes + 1 } : prev);
+    await fetch(`/api/questions/${slug}/vote`, { method: "POST" });
+  }
+
+  async function handleAnswer(e: React.FormEvent) {
+    e.preventDefault();
+    if (!question) return;
+    if (!answerForm.body.trim()) { setAnswerError("Please write your answer."); return; }
+    setSubmitting(true);
+    const res = await fetch(`/api/questions/${slug}/answers`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ answerBody: answerForm.body, authorName: answerForm.name }),
+    });
+    const data = await res.json();
+    setSubmitting(false);
+    if (data.success) {
+      setAnswerDone(true);
+      setQuestion((prev) =>
+        prev ? { ...prev, answers: [...prev.answers, data.answer], isAnswered: true } : prev
+      );
+      setAnswerForm({ body: "", name: "" });
+    } else {
+      setAnswerError("Failed to submit. Please try again.");
+    }
+  }
+
+  if (loading) return (
+    <div className="flex items-center justify-center py-32">
+      <Loader2 className="w-6 h-6 animate-spin text-gold-500" />
+    </div>
   );
-  const breadcrumbSchema = generateBreadcrumbSchema([
-    { name: "Home", url: "/" },
-    { name: "Questions", url: "/questions" },
-    { name: q.title, url: `/questions/${slug}` },
-  ]);
+
+  if (notFound || !question) return (
+    <div className="max-w-3xl mx-auto px-6 py-20 text-center">
+      <p className="text-muted-foreground text-lg mb-4">Question not found.</p>
+      <Link href="/questions" className="btn-primary">Browse Questions</Link>
+    </div>
+  );
+
+  const officialAnswers = question.answers.filter((a) => a.isOfficial);
+  const communityAnswers = question.answers.filter((a) => !a.isOfficial);
 
   return (
-    <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+    <div className="max-w-3xl mx-auto px-6 py-12">
+      <Link href="/questions" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm mb-8">
+        <ArrowLeft className="w-4 h-4" /> All Questions
+      </Link>
 
-      <div className="container-editorial py-12 max-w-5xl mx-auto">
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-1.5 text-xs text-muted-foreground mb-8" aria-label="Breadcrumb">
-          <Link href="/" className="hover:text-foreground">Home</Link>
-          <ChevronRight className="w-3 h-3" />
-          <Link href="/questions" className="hover:text-foreground">Questions</Link>
-          <ChevronRight className="w-3 h-3" />
-          <span className="text-foreground truncate max-w-[200px]">{q.title}</span>
-        </nav>
-
-        <div className="grid lg:grid-cols-3 gap-10">
-          <div className="lg:col-span-2">
-            {/* Question */}
-            <header className="mb-10">
-              <h1 className="font-serif text-3xl md:text-4xl font-bold mb-4 leading-tight">{q.title}</h1>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  <ChevronUp className="w-4 h-4" />
-                  <span className="text-sm font-medium">{q.votes} votes</span>
-                </div>
-                <span className="text-muted-foreground">·</span>
-                <span className="text-sm text-muted-foreground">{q.answers.length} answers</span>
-                <span className="text-muted-foreground">·</span>
-                <span className="text-sm text-muted-foreground">{q.date}</span>
-              </div>
-              <p className="text-muted-foreground leading-relaxed">{q.body}</p>
-              <div className="flex flex-wrap gap-2 mt-4">
-                {q.tags.map((tag) => (
-                  <Link key={tag} href={`/questions?tag=${tag}`}
-                    className="px-3 py-1 rounded-full bg-secondary text-xs font-medium text-muted-foreground hover:text-foreground">
-                    {tag}
-                  </Link>
-                ))}
-              </div>
-            </header>
-
-            {/* Answers */}
-            <section>
-              <h2 className="font-serif text-2xl font-bold mb-6">
-                {q.answers.length} Answer{q.answers.length !== 1 ? "s" : ""}
-              </h2>
-              <div className="space-y-6">
-                {q.answers.map((answer) => (
-                  <div key={answer.id} className={`p-6 rounded-2xl border ${answer.isAccepted ? "border-green-300 dark:border-green-700 bg-green-50/50 dark:bg-green-950/20" : "border-border bg-card"}`}>
-                    <div className="flex items-center gap-3 mb-4">
-                      {answer.isAccepted && (
-                        <span className="px-2.5 py-1 rounded-lg bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-400 text-xs font-semibold">
-                          ✓ Accepted Answer
-                        </span>
-                      )}
-                      </div>
-                    <div className="prose prose-sm max-w-none text-muted-foreground mb-4 whitespace-pre-line">
-                      {answer.body}
-                    </div>
-                    <div className="flex items-center justify-between pt-4 border-t border-border">
-                      <div className="flex items-center gap-2">
-                        <button className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-                          <ChevronUp className="w-4 h-4" /> {answer.voteScore}
-                        </button>
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {answer.author} · {answer.date}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* Submit answer */}
-            <section className="mt-10 p-6 rounded-2xl border border-border bg-card">
-              <h3 className="font-serif text-xl font-bold mb-4">Add Your Answer</h3>
-              <textarea
-                rows={6}
-                placeholder="Share a scripture-based answer..."
-                className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-gold-500 mb-4"
-              />
-              <div className="flex gap-3">
-                <button className="btn-primary text-sm">Post Answer</button>
-              </div>
-            </section>
+      {/* Question */}
+      <div className="flex gap-5 mb-10">
+        <div className="flex flex-col items-center gap-1 flex-shrink-0 pt-1">
+          <button
+            onClick={handleVote}
+            disabled={voted}
+            className={`w-10 h-10 flex items-center justify-center rounded-xl border transition-colors ${
+              voted ? "border-gold-500 bg-gold-50 dark:bg-gold-950/30 text-gold-500" : "border-border hover:border-gold-400 hover:bg-gold-50 dark:hover:bg-gold-950/30 text-muted-foreground hover:text-gold-500"
+            }`}
+          >
+            <ChevronUp className="w-5 h-5" />
+          </button>
+          <span className={`text-base font-bold ${voted ? "text-gold-500" : ""}`}>{question.votes}</span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap mb-3">
+            {question.isFeatured && <span className="px-2 py-0.5 rounded-md bg-gold-500/20 text-gold-600 dark:text-gold-400 text-xs font-semibold">Featured</span>}
+            {officialAnswers.length > 0 && (
+              <span className="px-2 py-0.5 rounded-md bg-gold-100 dark:bg-gold-900/30 text-gold-700 dark:text-gold-300 text-xs font-semibold flex items-center gap-1">
+                <CheckCircle className="w-3 h-3" /> Official Answer
+              </span>
+            )}
           </div>
-
-          {/* Sidebar */}
-          <aside className="space-y-6">
-            <div className="p-6 rounded-2xl border border-border bg-card">
-              <h3 className="font-serif font-bold mb-4">Related Questions</h3>
-              <div className="space-y-3">
-                {q.relatedQuestions.map((rq) => (
-                  <Link key={rq.slug} href={`/questions/${rq.slug}`}
-                    className="flex items-start gap-2 text-sm text-muted-foreground hover:text-foreground group">
-                    <MessageCircle className="w-3.5 h-3.5 mt-0.5 text-gold-500 flex-shrink-0" />
-                    <span className="group-hover:text-gold-600 dark:group-hover:text-gold-400">{rq.title}</span>
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            <div className="p-6 rounded-2xl border border-border bg-card">
-              <h3 className="font-serif font-bold mb-3">Explore Truth Dictionary</h3>
-              <p className="text-xs text-muted-foreground mb-4">
-                Find deep biblical definitions for terms in this question.
-              </p>
-              <div className="space-y-2">
-                {q.tags.slice(0, 3).map((tag) => (
-                  <Link key={tag} href={`/truth/${tag}`}
-                    className="flex items-center justify-between p-2.5 rounded-lg hover:bg-secondary transition-colors group">
-                    <span className="text-sm font-medium capitalize">{tag}</span>
-                    <ChevronRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-gold-500" />
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            <Link href="/newsletter" className="block p-6 rounded-2xl border border-gold-200 dark:border-gold-800/50 bg-gradient-to-br from-gold-50 to-parchment-50 dark:from-gold-950/20 dark:to-background">
-              <BookOpen className="w-5 h-5 text-gold-500 mb-2" />
-              <h3 className="font-serif font-bold mb-1">Daily Devotion</h3>
-              <p className="text-xs text-muted-foreground">
-                Get scripture, context, and prayer in your inbox every morning.
-              </p>
-            </Link>
-          </aside>
+          <h1 className="font-serif text-2xl sm:text-3xl font-bold mb-4 leading-snug">{question.title}</h1>
+          <p className="text-muted-foreground leading-relaxed mb-4">{question.body}</p>
+          <div className="flex items-center gap-2 flex-wrap">
+            {question.tags.map((tag) => (
+              <span key={tag} className="px-2 py-0.5 rounded-full bg-secondary text-xs text-muted-foreground">{tag}</span>
+            ))}
+            <span className="text-xs text-muted-foreground ml-auto">
+              Asked by {question.askedBy} · {new Date(question.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+            </span>
+          </div>
         </div>
       </div>
-    </>
+
+      {/* Answers */}
+      <div className="mb-10">
+        <h2 className="font-serif text-xl font-bold mb-6">
+          {question.answers.length === 0 ? "No answers yet" : `${question.answers.length} Answer${question.answers.length !== 1 ? "s" : ""}`}
+        </h2>
+
+        {officialAnswers.map((a) => (
+          <div key={a.id} className="rounded-2xl border-2 border-gold-400/50 bg-gold-500/5 overflow-hidden mb-6">
+            <div className="flex items-center gap-2 px-6 py-3 bg-gold-500/10 border-b border-gold-400/30">
+              <Crown className="w-4 h-4 text-gold-500" />
+              <span className="text-xs font-bold text-gold-600 dark:text-gold-400 uppercase tracking-wider">Official Answer by Joshua</span>
+            </div>
+            <div className="p-6">
+              <div className="text-sm leading-relaxed text-foreground" dangerouslySetInnerHTML={{ __html: renderBody(a.body) }} />
+              <div className="flex items-center gap-3 mt-6 pt-4 border-t border-border">
+                <div className="w-8 h-8 rounded-full bg-gold-500 flex items-center justify-center text-zinc-900 font-bold text-sm">J</div>
+                <div>
+                  <p className="text-sm font-semibold text-gold-600 dark:text-gold-400">{a.authorName}</p>
+                  <p className="text-xs text-muted-foreground">{new Date(a.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {communityAnswers.length > 0 && (
+          <div className="space-y-5">
+            {communityAnswers.map((a) => (
+              <div key={a.id} className="p-6 rounded-2xl border border-border bg-card">
+                <div className="text-sm leading-relaxed text-foreground mb-5" dangerouslySetInnerHTML={{ __html: renderBody(a.body) }} />
+                <div className="flex items-center gap-3 pt-4 border-t border-border">
+                  <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center">
+                    <User className="w-3.5 h-3.5 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{a.authorName}</p>
+                    <p className="text-xs text-muted-foreground">{new Date(a.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {question.answers.length === 0 && (
+          <div className="text-center py-12 border border-dashed border-border rounded-2xl">
+            <MessageCircle className="w-8 h-8 text-muted-foreground/40 mx-auto mb-3" />
+            <p className="text-muted-foreground text-sm">Be the first to answer this question.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Submit Answer */}
+      <div className="p-8 rounded-2xl bg-card border border-border">
+        <h3 className="font-serif text-lg font-bold mb-1">Share Your Answer</h3>
+        <p className="text-muted-foreground text-sm mb-5">Scripture-based, truth-grounded answers only. Use **bold** and *italic* for formatting.</p>
+
+        {answerDone && (
+          <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 text-sm mb-4">
+            <CheckCircle className="w-4 h-4" /> Your answer has been submitted. Thank you!
+          </div>
+        )}
+        {answerError && (
+          <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm mb-4">
+            <AlertCircle className="w-4 h-4" /> {answerError}
+          </div>
+        )}
+
+        <form onSubmit={handleAnswer} className="space-y-4">
+          <textarea
+            rows={6}
+            value={answerForm.body}
+            onChange={(e) => { setAnswerForm((p) => ({ ...p, body: e.target.value })); setAnswerError(""); }}
+            placeholder="Write a clear, scripture-based answer..."
+            className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-gold-500 resize-none"
+          />
+          <div className="flex gap-3 flex-wrap sm:flex-nowrap">
+            <input
+              type="text"
+              value={answerForm.name}
+              onChange={(e) => setAnswerForm((p) => ({ ...p, name: e.target.value }))}
+              placeholder="Your name (optional)"
+              className="flex-1 px-4 py-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
+            />
+            <button type="submit" disabled={submitting} className="btn-primary gap-2 disabled:opacity-50 whitespace-nowrap">
+              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+              {submitting ? "Submitting..." : "Post Answer"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }
